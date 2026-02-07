@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0A0A0A">
+<title>GRC Assistant</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--gold:#F5BA4D;--red:#F04E37;--char:#3C4044;--bg:#0A0A0A;--glass:rgba(255,255,255,.05);--glass-b:rgba(255,255,255,.08);--glass-h:rgba(255,255,255,.1);--text:#F0EFEB;--sub:rgba(255,255,255,.5);--brd:rgba(255,255,255,.08);--font:'Outfit',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;min-height:100vh;overflow-x:hidden}
+::selection{background:rgba(245,186,77,.3);color:#fff}
+input::placeholder{color:rgba(255,255,255,.25)}
+
+.glass{background:var(--glass);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--brd);border-radius:14px}
+
+/* HEADER */
+.hdr{background:rgba(10,10,10,.85);backdrop-filter:blur(24px);-webkit-backdrop-filter:blur(24px);border-bottom:1px solid var(--brd);padding:14px 18px;position:sticky;top:0;z-index:50;display:flex;align-items:center;gap:12px}
+.hdr h1{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.3px}
+.hdr p{font-size:9px;color:var(--sub);font-weight:600;letter-spacing:.8px;text-transform:uppercase;margin-top:1px}
+.hdr-back{background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--brd);border-radius:8px;padding:6px 12px;color:var(--sub);font-size:12px;cursor:pointer;font-family:var(--font);display:flex;align-items:center;gap:4px;transition:all .15s}
+.hdr-back:hover{background:var(--glass-h);color:var(--text)}
+.hdr-icon{color:var(--gold)}
+.deep-badge{margin-left:auto;font-size:9px;font-weight:700;color:var(--gold);background:rgba(245,186,77,.12);padding:3px 8px;border-radius:4px;letter-spacing:.5px;border:1px solid rgba(245,186,77,.15)}
+
+/* SEARCH */
+.srch{margin:16px 16px 0;display:flex;align-items:center;gap:8px;padding:10px 14px}
+.srch svg{color:rgba(255,255,255,.25);flex-shrink:0}
+.srch input{border:none;outline:none;width:100%;font-size:13px;font-family:var(--font);color:var(--text);background:transparent}
+.srch .clr{background:none;border:none;color:var(--sub);font-size:18px;cursor:pointer}
+
+/* PILLS */
+.pills{display:flex;gap:5px;padding:12px 16px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.pills::-webkit-scrollbar{display:none}
+.pill{padding:6px 12px;border-radius:20px;border:1px solid var(--brd);background:var(--glass);color:var(--sub);font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;font-family:var(--font);transition:all .15s;backdrop-filter:blur(8px)}
+.pill:hover{background:var(--glass-h);color:var(--text)}
+.pill.on{border-color:var(--gold);color:var(--gold);background:rgba(245,186,77,.1)}
+
+/* LIST */
+.list{padding:0 16px 32px;max-width:880px;margin:0 auto}
+.cat-hdr{display:flex;align-items:center;gap:8px;margin:20px 0 8px;padding-left:2px}
+.cat-bar{width:3px;height:14px;border-radius:2px}
+.cat-label{font-size:10px;font-weight:700;color:var(--sub);letter-spacing:.6px;text-transform:uppercase}
+.cat-count{font-size:10px;color:rgba(255,255,255,.3);background:var(--glass);padding:1px 6px;border-radius:10px}
+
+/* CARDS */
+.fw{padding:14px 16px;margin-bottom:6px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;font-family:var(--font);transition:all .15s}
+.fw:hover{background:var(--glass-h);border-color:rgba(245,186,77,.2)}
+.fw-name{font-size:14px;font-weight:700;color:var(--text)}
+.fw-yr{font-family:var(--mono);font-size:10px;color:rgba(255,255,255,.3);margin-left:8px}
+.fw-dp{font-size:8px;font-weight:700;color:var(--red);background:rgba(240,78,55,.12);padding:1px 5px;border-radius:3px;margin-left:6px;letter-spacing:.3px;border:1px solid rgba(240,78,55,.15)}
+.fw-desc{font-size:12px;color:var(--sub);margin-top:3px;line-height:1.4;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fw-chev{color:rgba(255,255,255,.2);flex-shrink:0;margin-left:8px}
+.empty{text-align:center;padding:40px;color:var(--sub);font-size:13px}
+
+/* DETAIL */
+.det{padding:0 16px 32px;max-width:880px;margin:0 auto}
+.title{padding:20px;margin-top:16px}
+.title-cat{font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;padding:2px 8px;border-radius:4px;display:inline-block}
+.title h2{font-size:22px;font-weight:800;letter-spacing:-.5px;margin-top:6px;color:var(--text)}
+.title .full{font-size:13px;color:var(--sub);margin-top:2px}
+.title-src{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;text-decoration:none;margin-top:8px;padding:4px 10px;border-radius:6px;border:1px solid var(--brd);color:var(--sub);background:var(--glass);transition:all .15s}
+.title-src:hover{border-color:var(--gold);color:var(--gold)}
+
+/* TABS */
+.tabs{display:flex;gap:2px;margin:14px 0;padding:3px;background:var(--glass);backdrop-filter:blur(12px);border:1px solid var(--brd);border-radius:12px}
+.tab{flex:1;padding:9px 10px;border:none;border-radius:9px;background:transparent;color:var(--sub);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font);transition:all .15s}
+.tab:hover{color:var(--text)}
+.tab.on{background:rgba(255,255,255,.1);color:var(--text);font-weight:700}
+
+/* CONTENT CARDS — Light for readability */
+.cc{background:rgba(255,255,255,.04);border:1px solid var(--brd);border-radius:12px;padding:18px;margin-bottom:10px}
+.cc h3{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+.cc p{font-size:14px;line-height:1.75;color:rgba(255,255,255,.8)}
+
+/* VERSION */
+.ver{background:rgba(245,186,77,.06);border:1px solid rgba(245,186,77,.15);border-radius:12px;padding:16px 18px;margin-bottom:10px}
+.ver h3{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.6px;text-transform:uppercase;margin-bottom:6px}
+.ver p{font-size:13px;line-height:1.65;color:rgba(245,186,77,.8)}
+
+/* COMPONENTS */
+.comp{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border-radius:8px;margin-bottom:2px}
+.comp:nth-child(even){background:rgba(255,255,255,.02)}
+.comp-n{font-family:var(--mono);font-size:10px;font-weight:600;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:2px}
+.comp-name{font-size:13px;font-weight:600;color:var(--text)}
+.comp-desc{font-size:12px;color:var(--sub);line-height:1.4;margin-top:1px}
+
+/* ACCORDION */
+.acc{background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:12px;overflow:hidden;margin-bottom:8px;transition:all .15s}
+.acc.open{border-color:rgba(245,186,77,.2);background:rgba(255,255,255,.04)}
+.acc-btn{width:100%;padding:14px 16px;background:transparent;border:none;cursor:pointer;font-family:var(--font);display:flex;justify-content:space-between;align-items:center;text-align:left;color:var(--text)}
+.acc.open .acc-btn{background:rgba(245,186,77,.03)}
+.acc-left{display:flex;align-items:center;gap:10px}
+.acc-num{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+.acc-name{font-size:13px;font-weight:600;color:var(--text)}
+.acc-cnt{font-size:11px;color:var(--sub);margin-top:1px}
+.acc-chv{color:var(--sub);transition:transform .2s}
+.acc.open .acc-chv{transform:rotate(180deg)}
+.acc-body{padding:0 16px 16px}
+.acc-desc{font-size:12.5px;line-height:1.5;color:var(--sub);padding:8px 12px;background:rgba(245,186,77,.04);border-radius:8px;margin-bottom:12px;border-left:3px solid var(--gold)}
+
+/* CONTROLS */
+.ctrl{margin-bottom:3px}
+.ctrl-row{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;transition:all .12s;border:1px solid transparent}
+.ctrl-row.click{cursor:pointer}
+.ctrl-row.click:hover{background:rgba(255,255,255,.03)}
+.ctrl-row.on{background:rgba(245,186,77,.04);border-color:rgba(245,186,77,.12)}
+.ctrl-dot{width:6px;height:6px;border-radius:50%;margin-top:6px;flex-shrink:0}
+.ctrl-txt{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8);flex:1}
+.ctrl-chv{color:var(--sub);flex-shrink:0;margin-top:2px;transition:transform .2s}
+.ctrl-row.on .ctrl-chv{transform:rotate(180deg)}
+
+/* EVIDENCE PANEL */
+.ep{margin:4px 0 8px 14px;border-left:2px solid rgba(245,186,77,.2);padding-left:14px}
+.ep-s{margin-bottom:10px}
+.ep-s:last-child{margin-bottom:0}
+.ep-h{display:flex;align-items:center;gap:5px;margin-bottom:5px}
+.ep-l{font-size:9px;font-weight:700;letter-spacing:.6px;text-transform:uppercase}
+.ep-i{font-size:12px;color:var(--sub);line-height:1.45;padding-left:2px;margin-bottom:2px}
+
+/* STEPS */
+.stp{display:flex;align-items:flex-start;gap:10px;padding:7px 10px;background:rgba(255,255,255,.02);border-radius:8px;margin-bottom:3px}
+.stp-n{font-family:var(--mono);font-size:10px;font-weight:700;color:#000;padding:2px 6px;border-radius:3px;flex-shrink:0;margin-top:2px}
+.stp-t{font-size:13px;line-height:1.5;color:rgba(255,255,255,.8)}
+
+/* PITFALLS */
+.pit{background:rgba(240,78,55,.06);border:1px solid rgba(240,78,55,.15);border-radius:12px;padding:18px;margin-bottom:10px}
+.pit h3{font-size:10px;font-weight:700;color:var(--red);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+.pit-i{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
+.pit-i p{font-size:12.5px;line-height:1.5;color:rgba(240,78,55,.8)}
+
+/* MATURITY */
+.mat{background:rgba(245,186,77,.04);border:1px solid rgba(245,186,77,.12);border-radius:12px;padding:18px;margin-bottom:10px}
+.mat h3{font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.6px;text-transform:uppercase;margin-bottom:10px}
+.mat-i{display:flex;align-items:flex-start;gap:8px;margin-bottom:4px}
+.mat-i p{font-size:12.5px;line-height:1.5;color:rgba(245,186,77,.8)}
+
+.ftr{text-align:center;padding:24px 16px;color:rgba(255,255,255,.2);font-size:10px;border-top:1px solid var(--brd);margin-top:20px}
+
+/* Ambient */
+.orb{position:fixed;border-radius:50%;pointer-events:none;z-index:0}
+.orb1{top:-15%;right:-8%;width:500px;height:500px;background:radial-gradient(circle,rgba(245,186,77,.1) 0%,transparent 70%)}
+.orb2{bottom:-20%;left:-10%;width:600px;height:600px;background:radial-gradient(circle,rgba(240,78,55,.08) 0%,transparent 70%)}
+.orb3{top:45%;left:40%;width:400px;height:400px;background:radial-gradient(circle,rgba(245,186,77,.05) 0%,transparent 70%)}
+.grain{position:fixed;inset:0;opacity:.025;pointer-events:none;z-index:1;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.content{position:relative;z-index:2}
+
+@media(min-width:640px){.list,.det,.srch-w,.pills-w{max-width:880px;margin-left:auto;margin-right:auto}}
+</style>
+</head>
+<body>
+<div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div><div class="grain"></div>
+<div id="root" class="content"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.9/babel.min.js"></script>
+<script type="text/babel">
+const{useState,useCallback}=React;
+const IX=[
+{id:"iso27001",n:"ISO 27001",cat:"Information Security",yr:"2022",d:"ISMS — 93 controls across 4 themes. Gold standard for infosec certification.",deep:true},
+{id:"nist-csf",n:"NIST CSF 2.0",cat:"Information Security",yr:"2024",d:"6-function cybersecurity framework with Govern. Universal applicability.",deep:true},
+{id:"sox",n:"SOX",cat:"Compliance & Regulatory",yr:"2002",d:"Financial reporting controls — Sections 302, 404 & ITGCs.",deep:true},
+{id:"cobit",n:"COBIT 2019",cat:"IT Governance",yr:"2019",d:"40 governance & management objectives across 5 domains.",deep:true},
+{id:"nist-ai",n:"NIST AI RMF",cat:"AI Governance",yr:"2023",d:"4-function AI risk framework — Govern, Map, Measure, Manage.",deep:true},
+{id:"eu-ai",n:"EU AI Act",cat:"AI Governance",yr:"2024",d:"World's first AI law — risk tiers, phased enforcement through 2027.",deep:true},
+{id:"coso-erm",n:"COSO ERM",cat:"Risk Management",yr:"2017",d:"Enterprise risk integrated with strategy & performance"},
+{id:"iso31000",n:"ISO 31000",cat:"Risk Management",yr:"2018",d:"Universal risk management principles, framework & process"},
+{id:"nist-rmf",n:"NIST RMF",cat:"Risk Management",yr:"2018",d:"7-step security & privacy risk management lifecycle"},
+{id:"fair",n:"FAIR",cat:"Risk Management",yr:"2005",d:"Quantitative cyber risk in financial terms"},
+{id:"iso27002",n:"ISO 27002",cat:"Information Security",yr:"2022",d:"Implementation guidance for 93 controls"},
+{id:"cis",n:"CIS Controls",cat:"Information Security",yr:"2024",d:"18 prioritized controls, 3 implementation groups"},
+{id:"gdpr",n:"GDPR",cat:"Compliance & Regulatory",yr:"2018",d:"EU data protection — 7 principles, 8 rights"},
+{id:"hipaa",n:"HIPAA",cat:"Compliance & Regulatory",yr:"1996",d:"Healthcare PHI protection"},
+{id:"pci",n:"PCI DSS",cat:"Compliance & Regulatory",yr:"2024",d:"Payment card security v4.0.1"},
+{id:"soc2",n:"SOC 2",cat:"Compliance & Regulatory",yr:"2017",d:"Trust Services Criteria — 5 categories"},
+{id:"coso-ic",n:"COSO IC",cat:"Control Framework",yr:"2013",d:"5 components, 17 principles for SOX 404"},
+{id:"itil",n:"ITIL 4",cat:"Control Framework",yr:"2019",d:"IT service management — 34 practices"},
+{id:"cmmi",n:"CMMI",cat:"Control Framework",yr:"2018",d:"Process maturity — 5 levels"},
+{id:"ffiec",n:"FFIEC",cat:"Industry-Specific",yr:"Ongoing",d:"Financial institution IT examination"},
+{id:"nerc",n:"NERC CIP",cat:"Industry-Specific",yr:"Ongoing",d:"Mandatory cybersecurity for electric grid"},
+{id:"fedramp",n:"FedRAMP",cat:"Industry-Specific",yr:"2011",d:"Cloud security for U.S. federal agencies"},
+{id:"nist-pf",n:"NIST Privacy",cat:"Emerging",yr:"2020",d:"Privacy risk management aligned with CSF"},
+{id:"zt",n:"Zero Trust",cat:"Emerging",yr:"2020",d:"Never trust, always verify"},
+{id:"esg",n:"ESG",cat:"Emerging",yr:"Ongoing",d:"SASB & GRI sustainability reporting"},
+{id:"iso42001",n:"ISO 42001",cat:"AI Governance",yr:"2023",d:"First certifiable AI management system"},
+{id:"ai-ethics",n:"Responsible AI",cat:"AI Governance",yr:"Ongoing",d:"OECD, UNESCO & industry principles"},
+];
+const CATS=[...new Set(IX.map(f=>f.cat))];
+const CC={"Risk Management":"#3B82F6","IT Governance":"#10B981","Information Security":"#F5BA4D","Compliance & Regulatory":"#F04E37","Control Framework":"#8B5CF6","Industry-Specific":"#06B6D4","Emerging":"#E2E0DC","AI Governance":"#F04E37"};
+const DEEP={
+"iso27001":()=>({full:"ISO/IEC 27001:2022 Information Security Management Systems",src:"https://www.iso.org/isoiec-27001-information-security.html",overview:"The world's premier ISMS standard with 93 controls across 4 themes (Organizational, People, Physical, Technological). The 2022 revision added 11 new controls including threat intelligence, cloud security, and data masking.",versionNote:"ISO/IEC 27001:2022 is current. Major reorganization from 14 domains to 4 themes. NIST published CSF 2.0-to-27001 mapping May 2025.",
+components:[
+{name:"A.5 Organizational (37)",desc:"Policies, procedures, organizational structures.",controls:[
+{ctrl:"A.5.1 Policies for information security",evidence:["Approved security policy document","Annual policy review records","Distribution & acknowledgment records"],automation:["Policy management (Drata, Vanta) auto-tracks reviews","Automated acknowledgment via HRMS","Version control in document management"],requirements:["Board/management approved","Communicated to all employees","Reviewed at planned intervals"]},
+{ctrl:"A.5.7 Threat intelligence",evidence:["Threat intel feeds subscribed","Threat reports produced","Integration into risk decisions"],automation:["SIEM integration with feeds (MISP, Recorded Future)","Automated IOC correlation","Auto-generated threat reports"],requirements:["Collect & analyze threat info","Produce actionable intelligence","Integrate into risk management"]},
+{ctrl:"A.5.23 Cloud services security",evidence:["Cloud security policy","CSP assessments (SOC 2, ISO certs)","Cloud config compliance reports"],automation:["CSPM tools (Wiz, Prisma Cloud)","Automated posture assessments","API-driven evidence from cloud providers"],requirements:["Cloud acquisition/use/exit processes","Cloud-specific security requirements","Monitor CSP compliance"]},
+{ctrl:"A.5.14-22 Access control & identity",evidence:["Access control policy","Quarterly access reviews","Provisioning/deprovisioning records","MFA enforcement logs"],automation:["IAM platforms (Okta, Azure AD)","Automated reviews (SailPoint)","MFA via IdP"],requirements:["Need-to-know/least privilege","Regular access reviews","Strong authentication"]},
+]},
+{name:"A.6 People (8)",desc:"HR-related security across employee lifecycle.",controls:[
+{ctrl:"A.6.1 Screening",evidence:["Background check records","Screening policy","Verification records"],automation:["Automated checks (Checkr, Sterling)","HRMS triggers on hire","Compliance dashboard"],requirements:["Proportionate to role","Before employment","Consider relevant laws"]},
+{ctrl:"A.6.3 Awareness & training",evidence:["Training completion records","Phishing simulation results","Program documentation"],automation:["LMS (KnowBe4, Proofpoint)","Auto phishing simulations","Completion dashboards"],requirements:["Regular awareness program","Role-based training","Effectiveness measured"]},
+]},
+{name:"A.7 Physical (14)",desc:"Physical & environmental security.",controls:[
+{ctrl:"A.7.1-4 Perimeters, entry, monitoring",evidence:["Physical security assessments","Badge access logs","CCTV records","Visitor logs"],automation:["Electronic access systems","CCTV with motion detection","Visitor management (Envoy)"],requirements:["Defined perimeters","Controlled entry","Monitoring appropriate to risk"]},
+]},
+{name:"A.8 Technological (34)",desc:"Technical security controls for systems, networks, data.",controls:[
+{ctrl:"A.8.1-5 Endpoints & privileged access",evidence:["EDR deployment records","PAM session logs","RBAC configs"],automation:["EDR (CrowdStrike, SentinelOne)","PAM (CyberArk, BeyondTrust)","RBAC via IAM"],requirements:["Endpoints protected","Privileged access restricted","Access based on need"]},
+{ctrl:"A.8.6-12 Vulnerability & configuration",evidence:["Vuln scan reports","Patch records","Anti-malware evidence","Baseline configs"],automation:["Scanners (Qualys, Nessus)","Auto patch (WSUS, Intune)","Config compliance (CIS Benchmarks)"],requirements:["Regular vuln assessments","Timely patching","Malware protection","Secure baselines"]},
+{ctrl:"A.8.13-19 Backup, logging, network",evidence:["Backup & restore logs","Centralized logs","Monitoring configs","Network diagrams"],automation:["SIEM (Splunk, Sentinel)","Backup with auto testing","Network monitoring (PRTG)"],requirements:["Backups tested","Logs stored & analyzed","Networks segmented"]},
+{ctrl:"A.8.20-34 Secure coding & DLP",evidence:["Secure SDLC docs","Pen test reports","DLP incident reports"],automation:["SAST/DAST in CI/CD (Snyk, SonarQube)","Auto pen testing","DLP (Microsoft Purview)"],requirements:["Secure SDLC","Regular testing","DLP controls active"]},
+]}],
+steps:["Define ISMS scope","Gap assessment","Security policy & objectives","Risk assessment","Statement of Applicability","Implement controls","Internal audits & reviews","Stage 1 & 2 certification"],
+pitfalls:["Scope too broad","Risk methodology doesn't scale","SoA not justified","Insufficient management commitment","Certification as end goal"],
+maturity:["Gap assessment with roadmap","Scope & policy approved","Risk assessment & SoA documented","Internal audit executing","Certification achieved"]}),
+
+"nist-csf":()=>({full:"NIST Cybersecurity Framework 2.0",src:"https://www.nist.gov/cyberframework",overview:"6-function taxonomy for cybersecurity risk. Version 2.0 added Govern function, expanded applicability, introduced organizational profiles.",versionNote:"CSF 2.0 (Feb 2024) current. Cyber AI Profile draft Jan 2026. Updated IR 8286 Dec 2025.",
+components:[
+{name:"GOVERN (GV)",desc:"Strategy, oversight, and risk management policy.",controls:[
+{ctrl:"GV.OC Organizational Context",evidence:["Mission & stakeholder docs","Regulatory register","Risk appetite statement"],automation:["GRC maps obligations","Regulatory change monitoring","Risk dashboards"],requirements:["Mission in cyber context","Legal requirements identified","Expectations documented"]},
+{ctrl:"GV.RM Risk Management Strategy",evidence:["Risk strategy document","Board risk appetite","Tolerance thresholds"],automation:["GRC centralizes strategy","Auto risk scoring","Real-time dashboards"],requirements:["Strategy communicated","Tolerance defined","Reviewed regularly"]},
+{ctrl:"GV.SC Supply Chain Risk",evidence:["Supplier assessments","Contract security requirements","SCRM policy"],automation:["Third-party platforms (SecurityScorecard)","Auto vendor questionnaires","Continuous monitoring"],requirements:["Supply chain risks managed","Security in contracts","Suppliers monitored"]},
+]},
+{name:"IDENTIFY (ID)",desc:"Assets, context, and risk understanding.",controls:[
+{ctrl:"ID.AM Asset Management",evidence:["HW/SW inventories","Data classification","Architecture diagrams"],automation:["CMDB (ServiceNow, Lansweeper)","Software inventory agents","Cloud discovery (AWS Config)"],requirements:["Assets inventoried","Data mapped","External systems catalogued"]},
+{ctrl:"ID.RA Risk Assessment",evidence:["Risk reports","Threat/vuln analysis","Risk register"],automation:["GRC platforms (Archer, OneTrust)","Vuln-to-risk correlation","Threat intel scoring"],requirements:["Threats identified","Risk determined","Responses prioritized"]},
+]},
+{name:"PROTECT (PR)",desc:"Safeguards for risk management.",controls:[
+{ctrl:"PR.AA Identity & Access",evidence:["IAM configs","MFA evidence","Access reviews"],automation:["IdP (Okta, Azure AD)","Lifecycle automation","Certification campaigns"],requirements:["Identities managed","Least privilege","MFA for privileged"]},
+{ctrl:"PR.DS Data Security",evidence:["Encryption configs","DLP records","Key management"],automation:["Encryption platforms","DLP enforcement","KMS (Vault, AWS KMS)"],requirements:["Data-at-rest protected","In-transit protected","Integrity verified"]},
+]},
+{name:"DETECT (DE)",desc:"Finding cybersecurity events.",controls:[
+{ctrl:"DE.CM Continuous Monitoring",evidence:["SIEM dashboards","Network topology","EDR records"],automation:["SIEM (Splunk, Sentinel)","EDR monitoring","NDR tools"],requirements:["Systems monitored","Environment monitored","Events analyzed"]},
+]},
+{name:"RESPOND (RS)",desc:"Incident response actions.",controls:[
+{ctrl:"RS.MA Incident Management",evidence:["IR plan","Incident logs","Post-incident reviews"],automation:["SOAR (XSOAR, Splunk SOAR)","Auto playbooks","Ticket escalation"],requirements:["IR plan executed","Incidents categorized","Contained & eradicated"]},
+]},
+{name:"RECOVER (RC)",desc:"Restoring operations.",controls:[
+{ctrl:"RC.RP Recovery Execution",evidence:["Recovery plans","DR test results","RTO records"],automation:["Auto failover (AWS DR)","IaC rebuild","DR testing automation"],requirements:["Plan executed","Activities prioritized","Lessons incorporated"]},
+]}],
+steps:["Create Current & Target Profiles","Gap analysis","Prioritize by risk","Action plan","Map to controls","Implement","Use Tiers","Continuous assessment"],
+pitfalls:["Treating as checklist","Ignoring Govern","Not creating profiles","Not customizing","Not using references"],
+maturity:["Tier 1 Partial","Tier 2 Risk Informed","Tier 3 Repeatable","Tier 4 Adaptive"]}),
+
+"sox":()=>({full:"Sarbanes-Oxley Act — ICFR",src:"https://www.sec.gov/spotlight/sarbanes-oxley.htm",overview:"U.S. law mandating internal controls over financial reporting. Section 404 requires management assessment and external audit. ITGCs critical.",versionNote:"SOX (2002) in force. PCAOB AS 2201 current. COSO IC 2013 evaluation framework.",
+components:[
+{name:"Section 404 — ICFR",desc:"Key controls over financial reporting.",controls:[
+{ctrl:"Financial Close Process",evidence:["Closing checklist with sign-offs","JE approvals","Reconciliation packages","Management review evidence"],automation:["Close management (BlackLine, FloQast)","Auto reconciliation","JE workflow","Close task tracking"],requirements:["Material accounts reconciled","JEs approved","Close on time","Review documented"]},
+{ctrl:"Segregation of Duties",evidence:["SoD matrix","Conflict reports","Access reports by role"],automation:["ERP SoD analysis (Pathlock, SafePaaS)","Continuous monitoring","Auto compensating control docs"],requirements:["Incompatible duties separated","Compensating controls documented","Quarterly review"]},
+]},
+{name:"IT General Controls",desc:"IT controls for financial reporting integrity.",controls:[
+{ctrl:"Access to Programs & Data",evidence:["User access listings","Provisioning tickets","Quarterly reviews","Privileged access lists"],automation:["IAM auto lifecycle","Quarterly certifications","PAM logging","Termination auto-revoke"],requirements:["Role-based approved access","Prompt termination","Quarterly reviews","Privileged restricted"]},
+{ctrl:"Change Management",evidence:["Change tickets","Testing evidence","Dev/prod separation","CAB minutes"],automation:["ITSM workflow (ServiceNow)","CI/CD gates","Auto testing","Environment separation"],requirements:["Changes authorized","Tested before prod","Dev restricted from prod","Emergency changes reviewed"]},
+{ctrl:"Computer Operations",evidence:["Job scheduling logs","Backup/restore records","Incident tickets","Batch error logs"],automation:["Schedulers (AutoSys, Control-M)","Backup verification","Incident automation","Exception reporting"],requirements:["Jobs complete","Backups tested","Errors resolved","Incidents tracked"]},
+{ctrl:"Program Development",evidence:["SDLC methodology","Requirements docs","Testing sign-offs","Go-live approvals"],automation:["ALM tools (Azure DevOps)","Auto test execution","Code review tools","Deployment automation"],requirements:["Formal SDLC","Requirements approved","Testing documented","Go-live authorized"]},
+]},
+{name:"Entity-Level Controls",desc:"Organizational controls.",controls:[
+{ctrl:"Control Environment",evidence:["Code of conduct acknowledgments","Ethics hotline reports","Audit committee minutes"],automation:["Compliance training platforms","Ethics hotline (NAVEX)","Board portals"],requirements:["Integrity at top","Code enforced","Audit committee active"]},
+{ctrl:"Risk Assessment",evidence:["Annual ICFR risk assessment","Scoping docs","Fraud risk assessment"],automation:["GRC workflows","Auto materiality","Risk scoring"],requirements:["Annual assessment","Material accounts identified","Fraud risk assessed"]},
+]}],
+steps:["Identify significant accounts","Top-down risk assessment","Material processes","Document flows & controls","Document ITGCs","Test","Evaluate deficiencies","Remediate"],
+pitfalls:["Over-scoping","Inadequate ITGC docs","Missing SoD","Manual over-reliance","No year-round evidence"],
+maturity:["Risk-based scoping","Current docs","ITGCs tested","Consistent evaluation","No material weaknesses"]}),
+
+"cobit":()=>({full:"COBIT 2019 — IT Governance & Management",src:"https://www.isaca.org/resources/cobit",overview:"40 objectives across 5 domains using goals cascade. Design factors for tailoring.",versionNote:"COBIT 2019 current. No new major version planned.",
+components:[
+{name:"EDM — Governance",desc:"Board-level evaluate, direct, monitor.",controls:[
+{ctrl:"EDM01 Governance Framework",evidence:["IT governance framework","Board meeting minutes","Authority matrix"],automation:["GRC tracking","Board dashboards","Policy management"],requirements:["Framework established","Requirements analyzed","System optimized"]},
+{ctrl:"EDM03 Risk Optimization",evidence:["IT risk appetite","Risk profiles","Optimization decisions"],automation:["Risk platforms","Auto aggregation","KRI dashboards"],requirements:["Appetite defined","Practices assessed","Within tolerance"]},
+]},
+{name:"APO — Strategic",desc:"Align, plan, organize.",controls:[
+{ctrl:"APO12 Managed Risk",evidence:["IT risk register","Methodology","Treatment plans","KRI reports"],automation:["GRC platforms (Archer)","Auto scoring","KRI alerts","Treatment tracking"],requirements:["Data analyzed","Scenarios evaluated","Risk reported"]},
+{ctrl:"APO13 Managed Security",evidence:["ISMS policy","Security architecture","Awareness records"],automation:["SIEM","Awareness platforms","SOAR"],requirements:["ISMS established","Risk plan maintained","Solutions operated"]},
+]},
+{name:"DSS — Delivery",desc:"Deliver, service, support.",controls:[
+{ctrl:"DSS02 Incidents & Requests",evidence:["Procedures","Ticket logs with SLAs","Escalation records","Trend reports"],automation:["ITSM (ServiceNow)","AI classification","Auto escalation","Self-service"],requirements:["Classification defined","SLAs met","Trends analyzed"]},
+{ctrl:"DSS05 Security Services",evidence:["Security ops procedures","Monitoring logs","Vuln reports"],automation:["SOC automation","Auto vuln scanning","Endpoint response"],requirements:["Protection implemented","Events monitored","Vulns managed"]},
+]},
+{name:"MEA — Assurance",desc:"Monitor, evaluate, assess.",controls:[
+{ctrl:"MEA03 External Compliance",evidence:["Requirements register","Assessment reports","Audit reports"],automation:["Regulatory change platforms","Compliance mapping","Evidence automation"],requirements:["Requirements identified","Compliance assessed","Independent review"]},
+]}],
+steps:["Goals cascade","Map to IT goals","Priority objectives","Capability 0-5","Define targets","Design factors","Implement","Monitor"],
+pitfalls:["All 40 at once","No goals cascade","Rigid checklist","No design factors"],
+maturity:["0 Incomplete","1 Performed","2 Managed","3 Established","4 Predictable","5 Optimizing"]}),
+
+"nist-ai":()=>({full:"NIST AI Risk Management Framework 1.0",src:"https://www.nist.gov/itl/ai-risk-management-framework",overview:"Voluntary AI risk framework. 4 functions: Govern, Map, Measure, Manage. Trustworthy AI characteristics.",versionNote:"AI RMF 1.0 (Jan 2023) current. Cyber AI Profile draft Jan 2026. Revision by 2028.",
+components:[
+{name:"GOVERN",desc:"Culture, policies, accountability.",controls:[
+{ctrl:"GOV 1 Legal/regulatory",evidence:["AI regulatory register","Legal reviews","Compliance mapping"],automation:["Regulatory tracking","Auto compliance mapping","AI inventory with classification"],requirements:["Requirements identified","Mapped to systems","Ongoing monitoring"]},
+{ctrl:"GOV 2 Accountability",evidence:["AI governance charter","Ethics Board ToR","RACI matrix"],automation:["GRC AI module","Role tracking","Meeting documentation"],requirements:["Roles defined","Accountability assigned","Reporting established"]},
+{ctrl:"GOV 4 Risk tolerances",evidence:["AI risk appetite","Tolerance thresholds","Board policy"],automation:["AI risk categories","Tolerance monitoring","Risk dashboards"],requirements:["Tolerances defined","Differentiated by impact","Communicated"]},
+]},
+{name:"MAP",desc:"Context, impacts, stakeholders.",controls:[
+{ctrl:"MAP 1 Purpose & context",evidence:["System documentation","Deployment specs","Impact analysis"],automation:["AI inventory (Monitaur, Credo AI)","Registration workflows","Impact templates"],requirements:["Purpose documented","Context specified","Users identified"]},
+{ctrl:"MAP 3 AI-specific risks",evidence:["AI risk assessment","Threat model","Third-party assessments"],automation:["AI risk platforms","Bias detection (Fairlearn)","Drift monitoring (Arize)"],requirements:["AI risks distinguished","Bias assessed","Adversarial evaluated"]},
+]},
+{name:"MEASURE",desc:"Assess & benchmark.",controls:[
+{ctrl:"MEA 2 Trustworthiness",evidence:["Fairness testing","Explainability assessments","Performance by group","Privacy impact"],automation:["Fairness in pipeline","LIME/SHAP in CI/CD","Performance monitoring","Privacy testing"],requirements:["Validity evaluated","Fairness assessed","Explainability measured","Privacy assessed"]},
+]},
+{name:"MANAGE",desc:"Address, respond, communicate.",controls:[
+{ctrl:"MAN 3 Post-deployment monitoring",evidence:["Monitoring dashboards","Drift reports","Override logs","AI incidents"],automation:["MLOps (MLflow, W&B)","Degradation alerts","HITL workflows","Incident automation"],requirements:["Continuously monitored","Degradation detected","Human oversight","IR covers AI"]},
+]}],
+steps:["AI governance committee","Inventory AI systems","Define tolerances","Map purpose & impact","TEVV assessment","Risk responses","Integrate into ERM","Continuously monitor"],
+pitfalls:["Checklist not culture","No integration","Ignoring Govern","Missing perspectives","Overlooking third-party AI"],
+maturity:["Inventory categorized","Governance established","All mapped","TEVV with metrics","Continuous monitoring"]}),
+
+"eu-ai":()=>({full:"EU AI Act (Regulation 2024/1689)",src:"https://digital-strategy.ec.europa.eu/en/policies/regulatory-framework-ai",overview:"World's first AI law. Risk tiers from banned to minimal. Phased enforcement through 2027. Fines up to 35M/7%.",versionNote:"In force Aug 2024. Prohibited Feb 2025. GPAI Aug 2025. High-risk Aug 2026-27.",
+components:[
+{name:"Risk Classification",desc:"AI systems classified by risk tier.",controls:[
+{ctrl:"AI Inventory & Classification",evidence:["AI register with tiers","Classification methodology","Approval records"],automation:["AI inventory (OneTrust AI, Holistic AI)","Auto questionnaires","Deployment monitoring"],requirements:["All AI inventoried","Each classified","Reviewed on change","High-risk registered"]},
+{ctrl:"Prohibited Practices",evidence:["Ban policy","Use case reviews","Attestation"],automation:["Review workflow","Pattern scanning","Acknowledgment tracking"],requirements:["No social scoring","No real-time biometric","No vulnerable group manipulation"]},
+]},
+{name:"High-Risk Requirements",desc:"Full obligations for high-risk AI.",controls:[
+{ctrl:"Risk Management (Art. 9)",evidence:["Risk plan per system","Identification records","Residual risk docs"],automation:["Risk platforms","Auto scoring","Monitoring dashboards"],requirements:["Lifecycle system established","Risks evaluated","Mitigation implemented","Residuals acceptable"]},
+{ctrl:"Data Governance (Art. 10)",evidence:["Training data docs","Quality assessments","Bias detection","Processing records"],automation:["Lineage (Collibra)","Quality checks","Bias detection","Provenance tracking"],requirements:["Quality criteria met","Bias mitigated","Governance documented","Data representative"]},
+{ctrl:"Human Oversight (Art. 14)",evidence:["Oversight mechanism docs","Override evidence","HITL procedures","Training records"],automation:["HITL workflow tools","Low-confidence escalation","Override audit trail","Intervention alerts"],requirements:["Oversight built in","Humans understand output","Override exists","Users trained"]},
+{ctrl:"Technical Documentation (Art. 11)",evidence:["Technical package","Model cards","Architecture diagrams","Test records"],automation:["Auto model docs (MLflow)","Template workflows","Test compilation","Version control"],requirements:["Comprehensive docs","Updated through lifecycle","Enables conformity","Covers all phases"]},
+]},
+{name:"GPAI Obligations",desc:"Foundation model requirements.",controls:[
+{ctrl:"GPAI Transparency",evidence:["Technical docs","Training data summaries","Downstream packages","EU notifications"],automation:["Auto model cards","Summarization tools","Provider portal","Filing automation"],requirements:["Docs maintained","Summaries available","Providers informed","Copyright compliant"]},
+{ctrl:"Systemic Risk (>10^25 FLOPs)",evidence:["Risk assessments","Red-team records","Incident reports","Evaluation results"],automation:["FLOP tracking","Red-team platforms","Risk dashboards","Incident reporting"],requirements:["Risk evaluated","Red-teaming done","Incidents reported","Mitigation documented"]},
+]},
+{name:"Governance",desc:"Enforcement mechanisms.",controls:[
+{ctrl:"AI Literacy & Readiness",evidence:["Training records","Competency assessments","Governance policy","Compliance roadmap"],automation:["LMS tracking","Assessment platforms","Deadline monitoring","Gap dashboards"],requirements:["Literacy for all","Training proportionate","Timeline tracked","Readiness assessed"]},
+]}],
+steps:["Inventory & classify","Identify high-risk & GPAI","Conformity assessments","Risk & data governance","Transparency","Human oversight","Quality & monitoring","Register high-risk","AI literacy","Track deadlines"],
+pitfalls:["Missing vendor AI","Misclassifying tiers","Underestimating GPAI","Not tracking timeline","Ignoring literacy"],
+maturity:["Inventory classified","Prohibited eliminated","GPAI met","High-risk compliant","Post-market operational"]}),
+};
+
+
+const OV={
+"coso-erm":()=>({full:"COSO ERM",src:"https://www.coso.org",overview:"5 components, 20 principles linking risk to strategy.",versionNote:"2017 current. Supplemented 2024.",components:[{name:"5 Components",desc:"Governance, Strategy, Performance, Review, Communication.",controls:["Governance & Culture","Strategy & Objective-Setting","Performance","Review & Revision","Information & Communication"]}],steps:["Maturity assessment","Sponsorship","Risk appetite","Governance","Methodology","Reporting","Integration","Improvement"],pitfalls:["Compliance only","Siloed","Complex taxonomies"],maturity:["Ad Hoc","Initial","Repeatable","Managed","Optimized"]}),
+"iso31000":()=>({full:"ISO 31000:2018",src:"https://www.iso.org/iso-31000-risk-management.html",overview:"Universal risk management: 8 principles, framework, process.",versionNote:"2018 current.",components:[{name:"3 Pillars",desc:"Principles, Framework, Process.",controls:["8 Principles","Framework","Process"]}],steps:["Context","Policy","Accountability","Resources","Implement","Monitor"],pitfalls:["Rigid","Ignoring human factors","Over-documentation"],maturity:["Accepted","Integrated","Applied","Monitoring","Embedded"]}),
+"nist-rmf":()=>({full:"NIST RMF Rev 2",src:"https://csrc.nist.gov/projects/risk-management",overview:"7 steps with SP 800-53 Rev 5.",versionNote:"Rev 2 (2018) current.",components:[{name:"7 Steps",desc:"Complete lifecycle.",controls:["Prepare","Categorize","Select","Implement","Assess","Authorize","Monitor"]}],steps:["Readiness","RACI","Categorize","Select","Implement","Assess","Authorize","ConMon"],pitfalls:["Skipping Prepare","Over-categorizing","One-time"],maturity:["Prepared","Categorized","Implemented","Authorized","ConMon"]}),
+"fair":()=>({full:"FAIR",src:"https://www.fairinstitute.org/",overview:"Quantitative risk via LEF/LM decomposition.",versionNote:"Evolving. FAIR-CAM 2021.",components:[{name:"Risk Model",desc:"Measurable risk factors.",controls:["Loss Event Frequency","Loss Magnitude","Monte Carlo"]}],steps:["Train","Scenarios","Data","Calibrate","Simulate","Ranges","Cost-benefit","Report"],pitfalls:["Point estimates","Term confusion","Not decision-connected"],maturity:["Calibrated","Quantified","Informs decisions","Data-driven","Exec reporting"]}),
+"iso27002":()=>({full:"ISO 27002:2022",src:"https://www.iso.org/standard/75652.html",overview:"93 controls with attributes.",versionNote:"2022 current.",components:[{name:"4 Themes",desc:"Org, People, Physical, Tech.",controls:["37+8+14+34 controls","Attributes"]}],steps:["Risk selection","Map","Implement","Prioritize","Measure"],pitfalls:["Not risk-linked","Not customized","Tech-only"],maturity:["Risk-driven","Adapted","Measured","Improved","Portfolio"]}),
+"cis":()=>({full:"CIS Controls v8.1",src:"https://www.cisecurity.org/controls",overview:"18 controls, 3 IGs.",versionNote:"v8.1 (2024) current.",components:[{name:"3 IGs",desc:"Tiered by risk.",controls:["IG1: Hygiene","IG2: Moderate","IG3: Advanced"]}],steps:["Determine IG","Assess","IG1 first","Progress","Benchmarks","Map"],pitfalls:["Too high IG","Skipping IG1","No inventory"],maturity:["Inventory","IG1","Vuln management","Logging","Pentesting"]}),
+"gdpr":()=>({full:"GDPR",src:"https://gdpr.eu/",overview:"7 principles, 8 rights, 6 lawful bases.",versionNote:"2018. Actively enforced.",components:[{name:"Core",desc:"Principles, rights, obligations.",controls:["7 Principles","8 Rights","6 Bases","DPIA, DPO, RoPA","72-hour breach"]}],steps:["Data mapping","Bases","RoPA","DSAR","DPIAs","DPO","Breach procedures"],pitfalls:["Consent-only","Incomplete mapping","Slow notification"],maturity:["Inventory","Documented","DSARs <30d","DPIAs","Breach <72h"]}),
+"hipaa":()=>({full:"HIPAA",src:"https://www.hhs.gov/hipaa/",overview:"Privacy, Security & Breach for PHI.",versionNote:"1996. Security Rule update proposed 2024.",components:[{name:"3 Rules",desc:"Privacy, Security, Breach.",controls:["Privacy Rule","Security Safeguards","Breach Notification"]}],steps:["Risk analysis","Identify PHI","Safeguards","BAAs","Training","Breach procedures","Audits"],pitfalls:["Incomplete analysis","Missing BAAs","Weak access"],maturity:["Analysis","Policies","BAAs","Training","Breach tested"]}),
+"pci":()=>({full:"PCI DSS v4.0.1",src:"https://www.pcisecuritystandards.org/",overview:"12 requirements. Mandatory since March 2025.",versionNote:"v4.0.1 (2024) current.",components:[{name:"6 Goals",desc:"Secure network to policy.",controls:["Network","Data","Vulns","Access","Monitor","Policy"]}],steps:["CDE scope","Segment","Gap","Remediate","Validate","QSA/SAQ","Submit","Maintain"],pitfalls:["Scope creep","Wrong validation","Annual-only"],maturity:["CDE minimized","Requirements met","ASV passing","Pentesting","Continuous"]}),
+"soc2":()=>({full:"SOC 2",src:"https://www.aicpa.org/soc4so",overview:"5 Trust Services Criteria.",versionNote:"2017 TSC current.",components:[{name:"5 Criteria",desc:"Security + optional.",controls:["Security","Availability","Processing Integrity","Confidentiality","Privacy"]}],steps:["Type I/II","Criteria","Readiness","Implement","Evidence","CPA","Remediate"],pitfalls:["Type II early","Too many criteria","No monitoring"],maturity:["Documented","Continuous evidence","Type I","Type II","Automated"]}),
+"coso-ic":()=>({full:"COSO IC 2013",src:"https://www.coso.org",overview:"5 components, 17 principles. SOX foundation.",versionNote:"2013 current.",components:[{name:"5+17",desc:"Environment to Monitoring.",controls:["Environment P1-5","Risk P6-9","Activities P10-12","Communication P13-15","Monitoring P16-17"]}],steps:["Evaluate","Map 17","Gaps","Design","Implement","Monitor","Document","Assess"],pitfalls:["Activities-only","Missing principles","Finance-only"],maturity:["17 present","Remediated","Monitoring","Integrated","Effective"]}),
+"itil":()=>({full:"ITIL 4",src:"https://www.axelos.com",overview:"34 practices, SVS, 7 principles.",versionNote:"2019 current.",components:[{name:"SVS",desc:"Value System.",controls:["7 Principles","Value Chain","34 Practices","Improvement"]}],steps:["Assess","Target","Prioritize","Implement","Streams","Measure","Embed"],pitfalls:["All 34","Rigid","Ignoring dimensions"],maturity:["Core","SLAs","Improvement","Integrated","Automated"]}),
+"cmmi":()=>({full:"CMMI v2.0",src:"https://cmmiinstitute.com/",overview:"5 maturity levels.",versionNote:"v2.0 (2018) current.",components:[{name:"5 Levels",desc:"Process maturity.",controls:["L1 Initial","L2 Managed","L3 Defined","L4 Quantitative","L5 Optimizing"]}],steps:["Target","Gap","Roadmap","Processes","Train","Implement","SCAMPI"],pitfalls:["Docs exercise","Jumping","Not tailoring"],maturity:["Appraised","Executing","Standards","Data","Improvement"]}),
+"ffiec":()=>({full:"FFIEC",src:"https://www.ffiec.gov/",overview:"CAT + IT Handbook.",versionNote:"Continuously updated.",components:[{name:"CAT",desc:"Risk & maturity.",controls:["Risk Profile","5 Maturity domains","11 Booklets"]}],steps:["CAT","Risk profile","Maturity","Gaps","Remediate","Handbook","Exams"],pitfalls:["Underestimating","No board","Incomplete third-party"],maturity:["CAT done","Meets risk","Minimal findings","Board reporting","Comprehensive"]}),
+"nerc":()=>({full:"NERC CIP",src:"https://www.nerc.com",overview:"CIP-002 through CIP-013.",versionNote:"Continuously updated.",components:[{name:"CIP Suite",desc:"BES cybersecurity.",controls:["Categorization","Personnel, Electronic, Physical","Systems, Incidents, Supply Chain"]}],steps:["Identify BES","Categorize","Plan","Implement","Evidence","Train","Assess","Audit"],pitfalls:["Wrong categorization","Incomplete ESP","Insufficient evidence"],maturity:["Categorized","Compliant","Evidence","No violations","Monitoring"]}),
+"fedramp":()=>({full:"FedRAMP",src:"https://www.fedramp.gov/",overview:"Cloud authorization. NIST 800-53 based.",versionNote:"Rev 5 baselines. Authorization Act 2022.",components:[{name:"3 Levels",desc:"Low, Moderate, High.",controls:["Low 125+","Moderate 325+","High 421+","3PAO","ConMon"]}],steps:["Impact","Path","Readiness","SSP","Implement","3PAO","Remediate","Authorization","ConMon"],pitfalls:["Underestimating time","Insufficient SSP","Wrong level"],maturity:["Ready","SSP","3PAO","ATO","ConMon"]}),
+"nist-pf":()=>({full:"NIST Privacy Framework",src:"https://www.nist.gov/privacy-framework",overview:"5 privacy functions.",versionNote:"v1.0 (2020) current.",components:[{name:"5 Functions",desc:"Privacy risk.",controls:["Identify-P","Govern-P","Control-P","Communicate-P","Protect-P"]}],steps:["Current Profile","Target","Gaps","Data mapping","Implement","Integrate","Monitor"],pitfalls:["No CSF coord","Incomplete inventory","Legal-only"],maturity:["Profiles","Inventory","Assessments","Integrated","Continuous"]}),
+"zt":()=>({full:"Zero Trust SP 800-207",src:"https://www.nist.gov/publications/zero-trust-architecture",overview:"Never trust, always verify.",versionNote:"SP 800-207 (2020). CISA v2.0 2023.",components:[{name:"ZTA",desc:"Architecture.",controls:["7 Principles","PE, PA, PEP","Identity","Micro-Seg","SDP"]}],steps:["Protect surface","Map flows","Build ZTA","Policies","Identity","Micro-seg","Monitor","Iterate"],pitfalls:["Product mindset","Too big","Legacy","Network-only"],maturity:["Surfaces","Identity perimeter","Micro-seg","Adaptive","Embedded"]}),
+"esg":()=>({full:"ESG — SASB & GRI",src:"https://www.sasb.org/",overview:"Sustainability reporting.",versionNote:"SASB under IFRS/ISSB. EU CSRD active.",components:[{name:"Standards",desc:"Industry + universal.",controls:["SASB 77 industries","GRI Universal","Double materiality","Assurance"]}],steps:["Materiality","Frameworks","Governance","Topics","Data","Targets","Report","Assurance"],pitfalls:["No materiality","Greenwashing","Bad data"],maturity:["Materiality","Governance","Auditable","Published","Assured"]}),
+"iso42001":()=>({full:"ISO 42001:2023",src:"https://www.iso.org/standard/81230.html",overview:"Certifiable AI management system.",versionNote:"Dec 2023. Certification available.",components:[{name:"AIMS",desc:"PDCA + AI controls.",controls:["Clauses 4-10","Annex A controls","Annex B risks"]}],steps:["Scope","Impact analysis","Risk assessment","Policy","Annex A SoA","Lifecycle","Audits","Certification"],pitfalls:["IT-only","No impact","Ignoring data","Narrow scope"],maturity:["Inventory","AIMS approved","Operational","Certified","Monitoring"]}),
+"ai-ethics":()=>({full:"Responsible AI",src:"https://oecd.ai/en/ai-principles",overview:"OECD, UNESCO, industry ethics.",versionNote:"OECD updated May 2024.",components:[{name:"Principles",desc:"Global AI ethics.",controls:["OECD 5","UNESCO 10","Industry frameworks","Practical tools"]}],steps:["Adopt","Ethics Board","Policy","AIAs","Bias testing","Model docs","Red-teaming","Train","Engage","Report"],pitfalls:["Ethics-washing","No enforcement","Ignoring harms","No authority"],maturity:["Adopted","Operational","AIAs","Fairness CI/CD","Transparent"]}),
+};
+
+
+
+const Svg=({d,s=16,sw=2})=><svg width={s} height={s} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={sw}><path d={d}/></svg>;
+const SvgSearch=()=><Svg d="M11 3a8 8 0 100 16 8 8 0 000-16zM21 21l-4.3-4.3"/>;
+const SvgBack=()=><Svg d="M15 18l-6-6 6-6" s={14}/>;
+const SvgChev=()=><Svg d="M9 18l6-6-6-6" s={10} sw={2.5}/>;
+const SvgDown=()=><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="6 9 12 15 18 9"/></svg>;
+const SvgExt=()=><Svg d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3" s={10}/>;
+const SvgShield=()=><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>;
+
+function App(){
+const[view,setView]=useState("list");
+const[aid,setAid]=useState(null);
+const[data,setData]=useState(null);
+const[tab,setTab]=useState("overview");
+const[search,setSearch]=useState("");
+const[cf,setCf]=useState("All");
+const[exp,setExp]=useState(null);
+const[cexp,setCexp]=useState(null);
+
+const open=(id)=>{const l=DEEP[id]||OV[id];if(l){setData(l());setAid(id);setView("detail");setTab("overview");setExp(null);setCexp(null);}};
+const back=()=>{setView("list");setAid(null);setData(null);};
+const meta=aid?IX.find(f=>f.id===aid):null;
+const accent=meta?(CC[meta.cat]||"#F5BA4D"):"#F5BA4D";
+const isDeep=meta?.deep;
+const fl=IX.filter(f=>{const q=search.toLowerCase();return(!q||f.n.toLowerCase().includes(q)||f.d.toLowerCase().includes(q)||f.cat.toLowerCase().includes(q))&&(cf==="All"||f.cat===cf);});
+const gr={};fl.forEach(f=>{(gr[f.cat]=gr[f.cat]||[]).push(f);});
+
+return(
+<div>
+{/* HEADER */}
+<header className="hdr">
+{view==="detail"&&<button className="hdr-back" onClick={back}><SvgBack/> Back</button>}
+<div style={{display:"flex",alignItems:"center",gap:"8px"}}>
+<span className="hdr-icon"><SvgShield/></span>
+<div>
+<h1>GRC Assistant</h1>
+<p>{meta?`${meta.n} · ${meta.cat}`:"27 Frameworks · Governance · Risk · Compliance"}</p>
+</div>
+</div>
+{isDeep&&view==="detail"&&<span className="deep-badge">DEEP</span>}
+</header>
+
+{/* LIST VIEW */}
+{view==="list"&&<>
+<div className="srch glass" style={{margin:"16px 16px 0"}}><SvgSearch/><input placeholder="Search frameworks..." value={search} onChange={e=>setSearch(e.target.value)}/>{search&&<button className="clr" onClick={()=>setSearch("")}>×</button>}</div>
+<div className="pills" style={{padding:"12px 16px"}}>{["All",...CATS].map(c=><button key={c} className={`pill${cf===c?" on":""}`} onClick={()=>setCf(c)}>{c}</button>)}</div>
+<div className="list">
+{Object.entries(gr).map(([cat,items])=>(
+<div key={cat}>
+<div className="cat-hdr"><div className="cat-bar" style={{background:CC[cat]}}/><span className="cat-label">{cat}</span><span className="cat-count">{items.length}</span></div>
+{items.map(f=>(
+<button key={f.id} className="fw glass" onClick={()=>open(f.id)}>
+<div style={{minWidth:0,flex:1}}>
+<div style={{display:"flex",alignItems:"center",flexWrap:"wrap"}}><span className="fw-name">{f.n}</span><span className="fw-yr">{f.yr}</span>{f.deep&&<span className="fw-dp">DEEP</span>}</div>
+<p className="fw-desc">{f.d}</p>
+</div>
+<span className="fw-chev"><SvgChev/></span>
+</button>
+))}
+</div>
+))}
+{fl.length===0&&<p className="empty">No frameworks match.</p>}
+</div>
+</>}
+
+{/* DETAIL VIEW */}
+{view==="detail"&&data&&meta&&(
+<div className="det">
+<div className="title glass">
+<span className="title-cat" style={{color:accent,background:`${accent}15`,border:`1px solid ${accent}25`}}>{meta.cat}</span>
+<h2>{meta.n}</h2>
+<p className="full">{data.full}</p>
+<a className="title-src" href={data.src?.split("|")[0]?.trim()} target="_blank" rel="noopener noreferrer">Source <SvgExt/></a>
+</div>
+
+<div className="tabs">
+{[["overview","Overview"],["controls",isDeep?"Controls & Evidence":"Controls"],["guidance","Guidance"]].map(([k,l])=>
+<button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>{setTab(k);setExp(null);setCexp(null);}}>{l}</button>
+)}
+</div>
+
+{/* OVERVIEW */}
+{tab==="overview"&&<>
+<div className="cc"><h3>Overview</h3><p>{data.overview}</p></div>
+{data.versionNote&&<div className="ver"><h3>⟳ Version Currency — Feb 2026</h3><p>{data.versionNote}</p></div>}
+<div className="cc"><h3>Components</h3>
+{data.components.map((c,i)=><div key={i} className="comp"><span className="comp-n" style={{color:accent,background:`${accent}12`}}>{String(i+1).padStart(2,"0")}</span><div><p className="comp-name">{c.name}</p><p className="comp-desc">{c.desc}</p></div></div>)}
+</div>
+</>}
+
+{/* CONTROLS */}
+{tab==="controls"&&<div>
+{data.components.map((comp,ci)=>{const isO=exp===ci;return(
+<div key={ci} className={`acc${isO?" open":""}`}>
+<button className="acc-btn" onClick={()=>{setExp(isO?null:ci);setCexp(null);}}>
+<div className="acc-left">
+<span className="acc-num" style={{color:accent,background:`${accent}12`,border:`1px solid ${accent}20`}}>{String(ci+1).padStart(2,"0")}</span>
+<div><p className="acc-name">{comp.name}</p><p className="acc-cnt">{comp.controls.length} controls</p></div>
+</div>
+<span className="acc-chv"><SvgDown/></span>
+</button>
+{isO&&<div className="acc-body">
+<p className="acc-desc">{comp.desc}</p>
+{comp.controls.map((ctrl,j)=>{
+const isObj=typeof ctrl==="object";const txt=isObj?ctrl.ctrl:ctrl;
+const hasD=isObj&&(ctrl.evidence||ctrl.automation||ctrl.requirements);
+const dO=cexp===`${ci}-${j}`;
+return(<div key={j} className="ctrl">
+<div className={`ctrl-row${hasD?" click":""}${dO?" on":""}`} onClick={()=>hasD&&setCexp(dO?null:`${ci}-${j}`)}>
+<div className="ctrl-dot" style={{background:accent}}/>
+<span className="ctrl-txt">{txt}</span>
+{hasD&&<span className="ctrl-chv"><SvgDown/></span>}
+</div>
+{dO&&hasD&&<div className="ep">
+{ctrl.evidence&&<div className="ep-s"><div className="ep-h"><span className="ep-l" style={{color:"#60A5FA"}}>🔍 Evidence</span></div>{ctrl.evidence.map((e,k)=><p key={k} className="ep-i">· {e}</p>)}</div>}
+{ctrl.automation&&<div className="ep-s"><div className="ep-h"><span className="ep-l" style={{color:"#34D399"}}>⚙️ Automation</span></div>{ctrl.automation.map((a,k)=><p key={k} className="ep-i">· {a}</p>)}</div>}
+{ctrl.requirements&&<div className="ep-s"><div className="ep-h"><span className="ep-l" style={{color:"#F5BA4D"}}>📋 Requirements</span></div>{ctrl.requirements.map((r,k)=><p key={k} className="ep-i">· {r}</p>)}</div>}
+</div>}
+</div>);
+})}
+</div>}
+</div>);})}
+</div>}
+
+{/* GUIDANCE */}
+{tab==="guidance"&&<>
+<div className="cc"><h3>Implementation Steps</h3>
+{data.steps.map((s,i)=><div key={i} className="stp"><span className="stp-n" style={{background:accent}}>{i+1}</span><span className="stp-t">{s}</span></div>)}
+</div>
+<div className="pit"><h3>⚠ Common Pitfalls</h3>
+{data.pitfalls.map((p,i)=><div key={i} className="pit-i"><p>⚠ {p}</p></div>)}
+</div>
+<div className="mat"><h3>↗ Maturity Indicators</h3>
+{data.maturity.map((m,i)=><div key={i} className="mat-i"><p>↗ {m}</p></div>)}
+</div>
+</>}
+</div>)}
+
+<footer className="ftr">GRC Consultant Assistant · 27 Frameworks · 6 Deep · PWA v1</footer>
+</div>
+);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
+</script>
+</body>
+</html>
